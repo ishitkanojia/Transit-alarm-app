@@ -14,7 +14,10 @@ A responsive banking website homepage built using HTML, CSS, and JavaScript.
 - JavaScript
 
 ## Screenshots
-(Add screenshots here)
+https://github.com/ishitkanojia/Transit-alarm-app/blob/32f9da457dcdf41e602dd2d2ee4c11f7916b21b2/Screenshot%202026-05-10%20120602.png
+https://github.com/ishitkanojia/Transit-alarm-app/blob/32f9da457dcdf41e602dd2d2ee4c11f7916b21b2/Screenshot%202026-05-10%20120614.png
+https://github.com/ishitkanojia/Transit-alarm-app/blob/32f9da457dcdf41e602dd2d2ee4c11f7916b21b2/Screenshot%202026-05-10%20120633.png
+https://github.com/ishitkanojia/Transit-alarm-app/blob/32f9da457dcdf41e602dd2d2ee4c11f7916b21b2/Screenshot%202026-05-10%20120643.png
 
 ## How to Run
 1. Download the project
