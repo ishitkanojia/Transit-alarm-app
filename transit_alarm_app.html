@@ -1,0 +1,372 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); }
+
+  .app-shell {
+    display: flex; gap: 16px; padding: 1rem 0; align-items: flex-start; flex-wrap: wrap;
+  }
+
+  .phone-frame {
+    width: 280px; min-width: 280px;
+    background: var(--color-background-secondary);
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: 28px;
+    padding: 20px 12px;
+    flex-shrink: 0;
+  }
+
+  .screen {
+    background: #0a0e1a;
+    border-radius: 20px;
+    overflow: hidden;
+    min-height: 520px;
+    position: relative;
+    color: #e8edf5;
+    font-size: 13px;
+  }
+
+  .status-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 16px 4px;
+    font-size: 11px; color: rgba(232,237,245,0.5);
+  }
+
+  .header {
+    padding: 8px 16px 12px;
+    border-bottom: 0.5px solid rgba(255,255,255,0.06);
+  }
+  .header h1 { font-size: 18px; font-weight: 500; color: #e8edf5; letter-spacing: -0.3px; }
+  .header p { font-size: 12px; color: rgba(232,237,245,0.45); margin-top: 2px; }
+
+  .section { padding: 12px 16px; }
+  .section-label { font-size: 11px; color: rgba(232,237,245,0.35); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+
+  .destination-card {
+    background: rgba(55,138,221,0.12);
+    border: 0.5px solid rgba(55,138,221,0.3);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .dest-icon { font-size: 20px; color: #378ADD; }
+  .dest-name { font-size: 14px; font-weight: 500; color: #e8edf5; }
+  .dest-sub { font-size: 11px; color: rgba(232,237,245,0.45); margin-top: 2px; }
+
+  .progress-area { padding: 10px 16px; }
+  .track-line {
+    position: relative; height: 56px; display: flex; align-items: center;
+    margin: 4px 0 8px;
+  }
+  .track-bg {
+    position: absolute; left: 16px; right: 16px; height: 3px;
+    background: rgba(255,255,255,0.08); border-radius: 2px;
+  }
+  .track-fill {
+    position: absolute; left: 16px; height: 3px;
+    background: linear-gradient(90deg, #378ADD, #1d9e75);
+    border-radius: 2px; transition: width 0.6s ease;
+  }
+  .station-dot {
+    position: absolute; width: 10px; height: 10px; border-radius: 50%;
+    background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.2);
+    top: 50%; transform: translate(-50%, -50%);
+  }
+  .station-dot.passed { background: #378ADD; border-color: #378ADD; }
+  .station-dot.current {
+    background: #fff; border-color: #fff; width: 14px; height: 14px;
+    box-shadow: 0 0 0 4px rgba(255,255,255,0.12);
+  }
+  .station-dot.target {
+    background: #1D9E75; border-color: #1D9E75; width: 12px; height: 12px;
+  }
+  .train-marker {
+    position: absolute; top: 50%; transform: translate(-50%, -50%);
+    width: 20px; height: 20px; background: #fff; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; transition: left 0.6s ease;
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.15);
+  }
+
+  .station-labels {
+    display: flex; justify-content: space-between;
+    font-size: 10px; color: rgba(232,237,245,0.3);
+    padding: 0 10px;
+  }
+  .station-labels span.active { color: rgba(232,237,245,0.7); }
+  .station-labels span.target-label { color: #1D9E75; }
+
+  .stats-row {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;
+    padding: 0 16px 10px;
+  }
+  .stat-box {
+    background: rgba(255,255,255,0.04);
+    border: 0.5px solid rgba(255,255,255,0.07);
+    border-radius: 10px; padding: 8px; text-align: center;
+  }
+  .stat-val { font-size: 16px; font-weight: 500; color: #e8edf5; }
+  .stat-key { font-size: 10px; color: rgba(232,237,245,0.35); margin-top: 2px; }
+
+  .poll-indicator {
+    margin: 0 16px 10px;
+    background: rgba(255,255,255,0.04);
+    border: 0.5px solid rgba(255,255,255,0.07);
+    border-radius: 10px; padding: 10px 12px;
+  }
+  .poll-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .poll-label { font-size: 11px; color: rgba(232,237,245,0.45); }
+  .poll-badge {
+    font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 6px;
+  }
+  .poll-badge.slow { background: rgba(186,117,23,0.2); color: #FAC775; }
+  .poll-badge.medium { background: rgba(55,138,221,0.2); color: #85B7EB; }
+  .poll-badge.fast { background: rgba(29,158,117,0.2); color: #5DCAA5; }
+  .poll-bar-bg { height: 4px; background: rgba(255,255,255,0.07); border-radius: 2px; }
+  .poll-bar-fill { height: 4px; border-radius: 2px; transition: width 0.5s, background 0.5s; }
+
+  .alarm-pill {
+    margin: 6px 16px 12px;
+    background: rgba(29,158,117,0.1);
+    border: 0.5px solid rgba(29,158,117,0.3);
+    border-radius: 10px; padding: 10px 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .alarm-pill i { font-size: 18px; color: #1D9E75; }
+  .alarm-text { font-size: 12px; color: rgba(232,237,245,0.7); }
+  .alarm-text strong { color: #5DCAA5; font-weight: 500; }
+
+  .alarm-ring {
+    position: absolute; inset: 0; background: rgba(29,158,117,0.95);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 10px; border-radius: 20px; display: none;
+  }
+  .alarm-ring.show { display: flex; }
+  .ring-icon { font-size: 48px; color: #fff; animation: ring 0.5s ease infinite alternate; }
+  @keyframes ring { from { transform: rotate(-12deg); } to { transform: rotate(12deg); } }
+  .ring-title { font-size: 22px; font-weight: 500; color: #fff; }
+  .ring-sub { font-size: 13px; color: rgba(255,255,255,0.7); }
+  .dismiss-btn {
+    margin-top: 12px; background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3); color: #fff; border-radius: 20px;
+    padding: 10px 28px; font-size: 14px; cursor: pointer;
+  }
+</style>
+
+<h2 class="sr-only">Transit alarm app — tracks your location and alerts you before your destination stop</h2>
+
+<div class="app-shell">
+  <div class="phone-frame">
+    <div class="screen" id="screen">
+      <div class="alarm-ring" id="alarmRing">
+        <i class="ti ti-bell-ringing ring-icon" aria-hidden="true"></i>
+        <div class="ring-title">Wake up!</div>
+        <div class="ring-sub">Rajiv Chowk arriving soon</div>
+        <button class="dismiss-btn" onclick="dismissAlarm()">Dismiss</button>
+      </div>
+
+      <div class="status-bar">
+        <span id="timeDisplay">9:41</span>
+        <span><i class="ti ti-wifi" style="font-size:12px" aria-hidden="true"></i> <i class="ti ti-battery-2" style="font-size:12px" aria-hidden="true"></i></span>
+      </div>
+
+      <div class="header">
+        <h1><i class="ti ti-map-pin" style="font-size:16px; color:#378ADD; vertical-align:-2px; margin-right:5px" aria-hidden="true"></i>StopAlert</h1>
+        <p id="statusText">Tracking · Yellow Line</p>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Destination</div>
+        <div class="destination-card">
+          <i class="ti ti-train dest-icon" aria-hidden="true"></i>
+          <div>
+            <div class="dest-name">Rajiv Chowk</div>
+            <div class="dest-sub" id="etaText">~14 min · 5 stops away</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-area">
+        <div class="section-label" style="padding: 0 0 4px;">Route progress</div>
+        <div class="track-line">
+          <div class="track-bg"></div>
+          <div class="track-fill" id="trackFill" style="width:20%"></div>
+          <div class="station-dot passed" style="left:16px"></div>
+          <div class="station-dot passed" id="dot2" style="left:calc(16px + 22%)"></div>
+          <div class="station-dot" id="dot3" style="left:calc(16px + 44%)"></div>
+          <div class="station-dot current" id="trainDot" style="left:calc(16px + 20%)"></div>
+          <div class="station-dot" id="dot4" style="left:calc(16px + 66%)"></div>
+          <div class="station-dot target" style="right:16px"></div>
+        </div>
+        <div class="station-labels">
+          <span>Dwarka</span>
+          <span id="lbl2" class="active">Janakpuri</span>
+          <span id="lbl3">Tilak Nagar</span>
+          <span id="lbl4">Kirti Nagar</span>
+          <span class="target-label">Rajiv Chowk</span>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-val" id="distVal">4.2</div>
+          <div class="stat-key">km left</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="stopsVal">5</div>
+          <div class="stat-key">stops</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="speedVal">58</div>
+          <div class="stat-key">km/h</div>
+        </div>
+      </div>
+
+      <div class="poll-indicator">
+        <div class="poll-row">
+          <span class="poll-label"><i class="ti ti-refresh" style="font-size:12px; vertical-align:-1px; margin-right:4px" aria-hidden="true"></i>GPS poll rate</span>
+          <span class="poll-badge slow" id="pollBadge">every 10s · power save</span>
+        </div>
+        <div class="poll-bar-bg">
+          <div class="poll-bar-fill" id="pollBar" style="width:15%; background:#BA7517"></div>
+        </div>
+      </div>
+
+      <div class="alarm-pill">
+        <i class="ti ti-bell" aria-hidden="true"></i>
+        <div class="alarm-text">Alert set for <strong>1 stop before</strong> Rajiv Chowk</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 12px;">
+    <div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem;">
+      <p style="font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 12px;">Simulate journey</p>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <label style="font-size: 12px; color: var(--color-text-secondary);">Progress to destination</label>
+        <input type="range" id="progressSlider" min="0" max="100" value="20" step="1" style="width:100%">
+        <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--color-text-tertiary);">
+          <span>Departed</span><span>Arrived</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem;">
+      <p style="font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 10px;">Adaptive polling logic</p>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <div style="display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 8px; background: var(--color-background-secondary);">
+          <div style="width: 10px; height: 10px; border-radius: 50%; background: #BA7517; flex-shrink:0"></div>
+          <div style="flex:1">
+            <div style="font-size: 12px; color: var(--color-text-primary); font-weight: 500;">Far away (&gt; 3 km)</div>
+            <div style="font-size: 11px; color: var(--color-text-secondary);">Poll every 10s — max battery saving</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 8px; background: var(--color-background-secondary);">
+          <div style="width: 10px; height: 10px; border-radius: 50%; background: #378ADD; flex-shrink:0"></div>
+          <div style="flex:1">
+            <div style="font-size: 12px; color: var(--color-text-primary); font-weight: 500;">Approaching (1–3 km)</div>
+            <div style="font-size: 11px; color: var(--color-text-secondary);">Poll every 3s — moderate accuracy</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 8px; background: var(--color-background-secondary);">
+          <div style="width: 10px; height: 10px; border-radius: 50%; background: #1D9E75; flex-shrink:0"></div>
+          <div style="flex:1">
+            <div style="font-size: 12px; color: var(--color-text-primary); font-weight: 500;">Near (&lt; 1 km)</div>
+            <div style="font-size: 11px; color: var(--color-text-secondary);">Poll every 1s — high precision, alarm ready</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem;">
+      <p style="font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 10px;">Alert settings</p>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <label style="font-size: 12px; color: var(--color-text-secondary);">Wake me up</label>
+        <select id="alertTiming" style="font-size: 13px;">
+          <option>1 stop before destination</option>
+          <option>2 stops before destination</option>
+          <option>500m before destination</option>
+          <option>1 min before arrival</option>
+        </select>
+        <label style="font-size: 12px; color: var(--color-text-secondary); margin-top: 4px;">Mode</label>
+        <select style="font-size: 13px;">
+          <option>GPS + time hybrid</option>
+          <option>GPS only</option>
+          <option>Time-based only</option>
+        </select>
+      </div>
+    </div>
+
+    <a href="https://github.com/ishitkanojia" target="_blank" rel="noopener noreferrer" style="text-decoration: none;">
+  <button style="font-size: 13px; padding: 10px 16px; border-radius: var(--border-radius-md); cursor: pointer; text-align: left; width: 100%;">
+    Built by Ishit ↗
+  </button>
+   </a>
+  </div>
+</div>
+
+<script>
+const slider = document.getElementById('progressSlider');
+
+function updateApp(progress) {
+  const dist = Math.max(0, (4.2 * (1 - progress/100)).toFixed(1));
+  const stops = Math.max(0, Math.round(5 * (1 - progress/100)));
+  const eta = Math.max(0, Math.round(14 * (1 - progress/100)));
+
+  document.getElementById('distVal').textContent = dist;
+  document.getElementById('stopsVal').textContent = stops;
+  document.getElementById('speedVal').textContent = Math.round(45 + Math.random()*20);
+  document.getElementById('etaText').textContent = stops > 0 ? `~${eta} min · ${stops} stop${stops !== 1 ? 's' : ''} away` : 'Arriving now!';
+
+  const trainLeft = 16 + (progress / 100) * (100 - 32);
+  document.getElementById('trainDot').style.left = `calc(${trainLeft}% - 7px)`;
+  document.getElementById('trackFill').style.width = `calc(${progress}% - 32px + 16px)`;
+
+  const pollBadge = document.getElementById('pollBadge');
+  const pollBar = document.getElementById('pollBar');
+
+  if (dist > 3) {
+    pollBadge.textContent = 'every 10s · power save';
+    pollBadge.className = 'poll-badge slow';
+    pollBar.style.width = '15%';
+    pollBar.style.background = '#BA7517';
+  } else if (dist > 1) {
+    pollBadge.textContent = 'every 3s · moderate';
+    pollBadge.className = 'poll-badge medium';
+    pollBar.style.width = '50%';
+    pollBar.style.background = '#378ADD';
+  } else {
+    pollBadge.textContent = 'every 1s · high precision';
+    pollBadge.className = 'poll-badge fast';
+    pollBar.style.width = '90%';
+    pollBar.style.background = '#1D9E75';
+  }
+
+  if (progress >= 88) {
+    document.getElementById('alarmRing').classList.add('show');
+    document.getElementById('statusText').textContent = '⚠ Alarm triggered!';
+  }
+
+  const d2 = document.getElementById('dot2');
+  const d3 = document.getElementById('dot3');
+  if (progress > 30) d2.className = 'station-dot passed';
+  if (progress > 55) d3.className = 'station-dot passed';
+}
+
+slider.addEventListener('input', () => updateApp(parseInt(slider.value)));
+
+function dismissAlarm() {
+  document.getElementById('alarmRing').classList.remove('show');
+  slider.value = 20;
+  updateApp(20);
+  document.getElementById('statusText').textContent = 'Tracking · Yellow Line';
+}
+
+const timeEl = document.getElementById('timeDisplay');
+function updateTime() {
+  const now = new Date();
+  timeEl.textContent = `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+}
+updateTime();
+setInterval(updateTime, 10000);
+</script>
